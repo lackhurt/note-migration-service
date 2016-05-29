@@ -48,11 +48,15 @@ public class EvernotePuller {
     }
 
     public List<Note> fetchNotesBy(Notebook notebook) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
-        this.fetchNotesBy(notebook, 0, 100);
-        return null;
+        return this.fetchNotesBy(notebook, 0, 100);
     }
 
     public List<Note> fetchNotesBy(Tag tag) {
         return null;
+    }
+
+    public String fetchNoteContent(Note note) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+        String content = this.noteStore.getNoteContent(note.getGuid());
+        return content;
     }
 }

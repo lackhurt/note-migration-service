@@ -11,25 +11,88 @@ import com.evernote.edam.type.NoteSortOrder;
 import com.evernote.edam.type.Notebook;
 import com.evernote.edam.type.User;
 import com.evernote.edam.userstore.UserStore;
+import com.note.migration.evernote.EvernotePuller;
+import com.note.migration.evernote.EvernotePusher;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import com.rabbitmq.client.*;
 
 /**
  * Created by lackhurt on 16/4/24.
  */
 public class Test {
+    private final static String QUEUE_NAME = "hello";
     public static void main(String args[]) throws Exception {
-        String developerToken = "S=s1:U=9268b:E=15bd16fd885:C=15479bea978:P=185:A=january9527:V=2:H=b7ad250f113e99ef2c21e5042ce2fba2";
+        String developerToken = "S=s1:U=9268b:E=15c4dae34bc:C=154f5fd0728:P=1cd:A=en-devtoken:V=2:H=c58f985ce3eb71b80b9cd8389fb338f4";
 
+        String pushToken = "S=s1:U=928c7:E=15c4db9cc64:C=154f6089fe8:P=1cd:A=en-devtoken:V=2:H=a1d9350a2f5560fb1dccd40f1f7d29a6";
 // Set up the NoteStore client
-        EvernoteAuth evernoteAuth = new EvernoteAuth(EvernoteService.SANDBOX, developerToken);
-        ClientFactory factory = new ClientFactory(evernoteAuth);
+//        EvernoteAuth evernoteAuth = new EvernoteAuth(EvernoteService.SANDBOX, developerToken);
+//        ClientFactory factory = new ClientFactory(evernoteAuth);
 
         try {
 
-            NoteStoreClient noteStore = factory.createNoteStoreClient();
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setHost("pl.me");
+            factory.setUsername("user");
+            factory.setPassword("user");
+            Connection connection = factory.newConnection();
+            Channel channel = connection.createChannel();
+
+            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+            System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+
+            Consumer consumer = new DefaultConsumer(channel) {
+                @Override
+                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
+                        throws IOException {
+                    String message = new String(body, "UTF-8");
+                    System.out.println(" [x] Received '" + message + "'");
+                }
+            };
+            channel.basicConsume(QUEUE_NAME, true, consumer);
+
+            /*EvernotePuller puller = new EvernotePuller(developerToken);
+
+            EvernotePusher pusher = new EvernotePusher(pushToken);
+
+
+            puller.fetchAllNotebooks().forEach(notebook -> {
+                try {
+                    System.out.println(notebook.getName());
+
+                    notebook.setName(notebook.getName() + "3");
+                    pusher.createNotebook(notebook);
+
+                    List<Note> list = puller.fetchNotesBy(notebook);
+
+                    if (list != null) {
+                        list.forEach(note -> {
+                            try {
+                                if (note != null) {
+//                                    pusher.createNote(note);
+                                    System.out.println(note.getTitle());
+                                    System.out.println(puller.fetchNoteContent(note));
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        });
+                    }
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+*/
+
+
+            /*NoteStoreClient noteStore = factory.createNoteStoreClient();
 
             UserStoreClient userStore = factory.createUserStoreClient();
 
@@ -88,7 +151,7 @@ public class Test {
 
             note.setTagNames(tags);
 
-            noteStore.createNote(note);
+            noteStore.createNote(note);*/
 
         } catch (Exception e) {
             throw e;

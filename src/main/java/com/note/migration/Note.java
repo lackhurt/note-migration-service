@@ -1,9 +1,18 @@
 package com.note.migration;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.util.JSONWrappedObject;
+import com.rabbitmq.tools.json.JSONSerializable;
+import com.rabbitmq.tools.json.JSONWriter;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONString;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Note {
+public class Note implements JSONString {
     private String notebookName;
     private List<String> tags;
     private String content;
@@ -57,5 +66,10 @@ public class Note {
 
     public void addTag(String tag) {
         this.tags.add(tag);
+    }
+
+    @Override
+    public String toJSONString() {
+        return new JSONObject(this).toString();
     }
 }
