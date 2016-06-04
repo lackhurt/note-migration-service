@@ -23,7 +23,6 @@ public class Consumer {
         this.factory.setUsername("user");
         this.factory.setPassword("user");
         this.connection = this.factory.newConnection();
-
     }
 
 
